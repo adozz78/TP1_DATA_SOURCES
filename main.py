@@ -3,8 +3,6 @@ import logging
 
 app = Flask(__name__)
 
-# Configure logging
-logging.basicConfig(filename='server_log.log', level=logging.DEBUG)
 
 @app.route('/')
 def hello_world():
@@ -22,17 +20,13 @@ def hello_world():
 
 @app.route('/logger')
 def logger():
-    # Log a message on the server-side (Python)
-    logging.info("Log message from Python")
-
-    # Create JavaScript code to log a message on the browser's console
-    log_browser = """
-    <script>
-    console.log("Log message from browser");
-    </script>
-    """
     
-    return "Logging example. Check the server log and browser console." + log_browser
+    # Print a log on Python console
+    print('This is a log message in Python.')
+
+    # Print a log on the browser
+    log_browser = '<script>console.log("Log message from browser");</script>'
+    return log_browser
 
 if __name__ == '__main__':
     app.run(debug=True)
