@@ -1,8 +1,12 @@
 #import Flask
 from flask import Flask
+import logging
 
 #instance de l'objet Flask
 app = Flask(__name__)
+
+# Configure logging
+logging.basicConfig(filename='server_log.log', level=logging.DEBUG)
 
 
 @app.route('/')
@@ -19,3 +23,17 @@ src="https://www.googletagmanager.com/gtag/js?id=G-7E4M7T0YEB"></script>
 </script>
  """
  return prefix_google + "Hello World"
+
+@app.route('/logger')
+def logger():
+    # Log a message on the server-side (Python)
+    logging.info("Log message from Python")
+
+    # Create JavaScript code to log a message on the browser's console
+    log_browser = """
+    <script>
+    console.log("Log message from browser");
+    </script>
+    """
+    
+    return "Logging example. Check the server log and browser console." + log_browser
