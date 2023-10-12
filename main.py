@@ -1,10 +1,12 @@
 from flask import Flask, render_template, request
 import requests
 
+
+
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route('/', methods=['GET'])
 def hello_world():
     prefix_google = """
     <!-- Google tag (gtag.js) -->
@@ -16,7 +18,20 @@ def hello_world():
     gtag('config', 'G-7E4M7T0YEB');
     </script>
     """
-    return prefix_google + "Hello World"
+
+    button_ga = """
+    <form method="GET" action="/perform-google-request">
+        <input type="submit" value="Make Google Analytics Request">
+    </form>
+    """
+
+    button_cookies = """
+    <form method="GET" action="/display-cookies">
+        <input type="submit" value="Display Google Analytics cookies">
+    </form>
+    """
+
+    return prefix_google + "Hello World" + button_ga + button_cookies 
 
 @app.route('/logger', methods=['GET', 'POST'])
 def logger():
@@ -41,21 +56,19 @@ def logger():
     </form>
     """
 
-@app.route('/google-request', methods=['GET'])
-def google_request():
-    # Render a form with a button to make the Google request
-    return """
-    <form method="GET" action="/perform-google-request">
-        <input type="submit" value="Make Google Request">
-    </form>
-    """
-
 @app.route('/perform-google-request', methods=['GET'])
 def perform_google_request():
 
     req = requests.get("https://analytics.google.com/analytics/web/#/p407458242/reports/intelligenthome?params=_u..nav%3Dmaui")
 
-    return req.cookies.get_dict()
+    return req.text
+
+@app.route('/display-cookies', methods=['GET'])
+def display_cookies():
+
+    req_cookies = requests.get("https://analytics.google.com/analytics/web/#/p407458242/reports/intelligenthome?params=_u..nav%3Dmaui")
+
+    return req_cookies.cookies.get_dict()
     
 
 
