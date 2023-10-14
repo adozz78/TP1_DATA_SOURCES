@@ -1,9 +1,20 @@
 from flask import Flask, render_template, request
 import requests
-
+import os
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
+from google.analytics.data_v1beta import BetaAnalyticsDataClient
+from google.analytics.data_v1beta.types import (
+    DateRange,
+    Dimension,
+    Metric,
+    RunReportRequest,
+)
 
 
 app = Flask(__name__)
+
+KEY_FILE_LOCATION = 'ozanneproject-62622dbbd123.json'
 
 
 @app.route('/', methods=['GET'])
@@ -20,7 +31,7 @@ def hello_world():
     """
 
     button_ga = """
-    <form method="GET" action="/perform-google-request">
+    <form method="GET" action="/perform-google-request2">
         <input type="submit" value="Make Google Analytics Request">
     </form>
     """
@@ -59,9 +70,35 @@ def logger():
 @app.route('/perform-google-request', methods=['GET'])
 def perform_google_request():
 
+
     req = requests.get("https://analytics.google.com/analytics/web/#/p407458242/reports/intelligenthome?params=_u..nav%3Dmaui")
 
     return req.text
+
+@app.route('/perform-google-request2', methods=['GET'])
+def perform_google_request2():
+
+    os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = KEY_FILE_LOCATION
+    PROPERTY_ID = '407458242'
+    
+    starting_date = "30daysAgo"
+    ending_date = "yesterday"
+
+    client = BetaAnalyticsDataClient()
+    
+    def get_visitor_count(client, property_id):
+        request = RunReportRequest(
+            property=f"properties/{property_id}",
+            date_ranges=[{"start_date": starting_date, "end_date": ending_date}],
+            metrics=[{"name": "activeUsers"}]
+        )
+        response = client.run_report(request)
+
+        return response
+
+    visitor_count = get_visitor_count(client, PROPERTY_ID)
+
+    return f'Number of visitors : {visitor_count}'
 
 @app.route('/display-cookies', methods=['GET'])
 def display_cookies():
