@@ -31,7 +31,7 @@ def hello_world():
     """
 
     button_ga = """
-    <form method="GET" action="/perform-google-request2">
+    <form method="GET" action="/perform-google-request">
         <input type="submit" value="Make Google Analytics Request">
     </form>
     """
@@ -42,7 +42,13 @@ def hello_world():
     </form>
     """
 
-    return prefix_google + "Hello World" + button_ga + button_cookies 
+    button_ga_auth = """
+    <form method="GET" action="/perform-google-request2">
+        <input type="submit" value="Number of visitors">
+    </form>
+    """
+
+    return prefix_google + "Hello World" + button_ga + button_cookies + button_ga_auth
 
 @app.route('/logger', methods=['GET', 'POST'])
 def logger():
@@ -80,7 +86,7 @@ def perform_google_request2():
 
     os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = KEY_FILE_LOCATION
     PROPERTY_ID = '407458242'
-    
+
     starting_date = "30daysAgo"
     ending_date = "yesterday"
 
