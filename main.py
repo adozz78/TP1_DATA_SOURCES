@@ -1,8 +1,8 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, jsonify
 import requests
 import os
-from google.auth.transport.requests import Request
-from google.oauth2 import service_account
+# from google.auth.transport.requests import Request
+# from google.oauth2 import service_account
 from google.analytics.data_v1beta import BetaAnalyticsDataClient
 from google.analytics.data_v1beta.types import (
     DateRange,
@@ -10,6 +10,7 @@ from google.analytics.data_v1beta.types import (
     Metric,
     RunReportRequest,
 )
+from pytrends.request import TrendReq
 
 
 app = Flask(__name__)
@@ -48,7 +49,19 @@ def hello_world():
     </form>
     """
 
-    return prefix_google + "Hello World" + button_ga + button_cookies + button_ga_auth
+    button_google_trend = """
+    <form method="GET" action="/google-trends">
+        <input type="submit" value="Google trends Data">
+    </form>
+    """
+
+    button_chart = """
+    <form method="GET" action="/chart">
+        <input type="submit" value="Google trends Charts">
+    </form>
+    """
+
+    return prefix_google + "Hello World" + button_ga + button_cookies + button_ga_auth + button_google_trend + button_chart
 
 @app.route('/logger', methods=['GET', 'POST'])
 def logger():
@@ -112,7 +125,26 @@ def display_cookies():
     req_cookies = requests.get("https://analytics.google.com/analytics/web/#/p407458242/reports/intelligenthome?params=_u..nav%3Dmaui")
 
     return req_cookies.cookies.get_dict()
-    
+
+@app.route('/google-trends', methods=['GET'])
+def google_trends():
+
+    pytrends = TrendReq(hl='en-US', tz=360)
+    keywords = ["Kamaru Usman", "Alexander Volkanovski"]
+    pytrends.build_payload(keywords, timeframe='today 12-m', geo='US')
+    interest_over_time_df = pytrends.interest_over_time()
+
+    data = {
+        'dates': interest_over_time_df.index.strftime('%Y-%m-%d').tolist(),
+        'Kamaru Usman': interest_over_time_df['Kamaru Usman'].tolist(),
+        'Alexander Volkanovski': interest_over_time_df['Alexander Volkanovski'].tolist()
+    }
+
+    return jsonify(data)
+
+@app.route('/chart')
+def index():
+    return render_template('trends_chart.html')
 
 
 if __name__ == '__main__':
